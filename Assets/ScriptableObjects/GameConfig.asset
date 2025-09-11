@@ -9,15 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ae230224fb8e03245baaec32534c2be5, type: 3}
-  m_Name: PlayerStats
+  m_Script: {fileID: 11500000, guid: 2f7d83946521c5a418d6ab16083c49cb, type: 3}
+  m_Name: GameConfig
   m_EditorClassIdentifier: 
-  maxHealth: 3
-  currentHealth: 0
-  collectedItems: 7
-  moveSpeed: 5
-  jumpHeight: 2
-  mouseSensitivity: 100
-  dashSpeed: 15
-  dashDuration: 0.2
-  dashCooldown: 5
+  totalCollectibles: 20
+  TotalTime: 300

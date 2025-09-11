@@ -4,20 +4,10 @@ using UnityEngine.AI;
 
 public class Enemy : MonoBehaviour
 {
-    [Header("Combat Settings")]
-    [SerializeField] private int damage = 1;
-
-    [Header("Patrol Settings")]
-    [SerializeField] private float patrolRadius = 10f;
-    [SerializeField] private float stoppingDistance = 0.5f;
-    [SerializeField] private LayerMask obstacleMask;
-
-    [Header("Chase Settings")]
-    [SerializeField] private float detectionRange = 8f;      // how far enemy can see player
-    [SerializeField] private float senseRange = 4f;          // "feel" range (no LoS needed)
-    [SerializeField] private float patrolSpeed = 2f;
-    [SerializeField] private float chaseSpeed = 3.5f;
     [SerializeField] private Transform player;
+
+    [Header("Scriptable Object Enemy Data")]
+    [SerializeField] private EnemyStatsSO enemyStats;
 
     private Vector3 targetPos;
     private enum EnemyState { Patrol, Chase }
@@ -28,7 +18,7 @@ public class Enemy : MonoBehaviour
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
-        agent.stoppingDistance = stoppingDistance;
+        agent.stoppingDistance = enemyStats.stoppingDistance;
     }
 
     void Start()
@@ -55,7 +45,7 @@ public class Enemy : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            GameEvents.PlayerDamaged(damage);
+            GameEvents.PlayerDamaged(enemyStats.damage);
         }
     }
 
@@ -65,25 +55,25 @@ public class Enemy : MonoBehaviour
         float dist = Vector3.Distance(transform.position, player.position);
         bool hasLineOfSight = false;
 
-        if (dist <= detectionRange)
+        if (dist <= enemyStats.detectionRange)
         {
             Vector3 eye = transform.position + Vector3.up * 1.5f;
             Vector3 targetEye = player.position + Vector3.up * 1.5f;
 
-            if (!Physics.Linecast(eye, targetEye, obstacleMask))
+            if (!Physics.Linecast(eye, targetEye, enemyStats.obstacleMask))
             {
                 hasLineOfSight = true;
             }
         }
 
         // Chase if has LoS OR within sense range
-        if (hasLineOfSight || dist <= senseRange)
+        if (hasLineOfSight || dist <= enemyStats.senseRange)
         {
             if (currentState != EnemyState.Chase)
             {
                 GameManager.Instance.EnemyStartedChase();
                 currentState = EnemyState.Chase;
-                agent.speed = chaseSpeed;
+                agent.speed = enemyStats.chaseSpeed;
             }
             return;
         }
@@ -100,7 +90,7 @@ public class Enemy : MonoBehaviour
     // ================= PATROL =================
     void Patrol()
     {
-        if (!agent.pathPending && agent.remainingDistance <= stoppingDistance)
+        if (!agent.pathPending && agent.remainingDistance <= enemyStats.stoppingDistance)
         {
             PickNewDestination();
         }
@@ -110,7 +100,7 @@ public class Enemy : MonoBehaviour
     {
         for (int i = 0; i < 10; i++)
         {
-            Vector2 randomCircle = Random.insideUnitCircle * patrolRadius;
+            Vector2 randomCircle = Random.insideUnitCircle * enemyStats.patrolRadius;
             Vector3 candidate = new Vector3(
                 transform.position.x + randomCircle.x,
                 transform.position.y,
@@ -120,7 +110,7 @@ public class Enemy : MonoBehaviour
             NavMeshHit hit;
             if (NavMesh.SamplePosition(candidate, out hit, 2f, NavMesh.AllAreas))
             {
-                agent.speed = patrolSpeed;
+                agent.speed = enemyStats.patrolSpeed;
                 agent.SetDestination(hit.position);
                 targetPos = hit.position;
                 return;

@@ -13,7 +13,7 @@ public static class GameEvents
     public static event Action<MusicTrack> onMusicTrackChanged;
     public static event Action<SFXType> onSFXChanged;
     public static event Action<float, float> OnDashCooldownChanged;
-
+    public static event Action<float, float> OnCameraShaking;
     
     public class CollectibleEventArgs : EventArgs
     {
@@ -45,6 +45,10 @@ public static class GameEvents
     }
     public static event Action<GameStatusEventArgs> OnGameEnded;
 
+    public static void CameraShaking(float duration, float magnitude)
+    {
+        OnCameraShaking?.Invoke(duration, magnitude);
+    }
 
     public static void DashCooldownChanged(float remaining, float max)
     {

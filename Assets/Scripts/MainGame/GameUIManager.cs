@@ -39,7 +39,7 @@ public class GameUIManager : MonoBehaviour
     }
     private void HandleHealthUI(int damage)
     {
-        healthText.text = $"Health: {GameManager.Instance.GetCurrentHealth() - damage}/{GameManager.Instance.GetTotalHealth()}";
+        healthText.text = $"Health: {GameManager.Instance.GetCurrentHealth()}/{GameManager.Instance.GetTotalHealth()}";
     }
     private void HandleItemCollected(GameEvents.CollectibleEventArgs e)
     {

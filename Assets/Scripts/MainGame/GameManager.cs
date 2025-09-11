@@ -5,9 +5,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     [SerializeField] private PlayerStatsSO playerStats;
-    [SerializeField] private int totalCollectibles;
-    [SerializeField] private float TotalTime = 300f;
-
+    [SerializeField] private GameConfigSO gameConfig;
     [SerializeField] private GameUIManager gameUICanvas;
     [SerializeField] private GameEndUIManager gameEndUICanvas;
 
@@ -25,7 +23,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         playerStats.ResetStats();
-        timeRemaining = TotalTime;
+        timeRemaining = gameConfig.GetTotalTime();
     }
 
     private void Update()
@@ -97,6 +95,7 @@ public class GameManager : MonoBehaviour
 
     private void HandleDamage(int dmg)
     {
+        GameEvents.CameraShaking(0.5f, 0.2f);
         GameEvents.PlaySFX(SFXType.PlayerHit);
         playerStats.TakeDamage(dmg);
         CheckGameEnd();
@@ -118,7 +117,7 @@ public class GameManager : MonoBehaviour
     private void CheckGameEnd()
     {
         if (gameEnded) return;
-        if (playerStats.collectedItems >= totalCollectibles)
+        if (playerStats.collectedItems >= gameConfig.GetTotalCollectibles())
         {
             GameEvents.PlayBGM(MusicTrack.Victory);
             EndGame();
@@ -130,9 +129,9 @@ public class GameManager : MonoBehaviour
     }
     private int CalculateOverallScore() 
     {
-        float normalizedTime = timeRemaining / TotalTime;     
+        float normalizedTime = timeRemaining / gameConfig.GetTotalTime();     
         float normalizedHealth = playerStats.currentHealth / playerStats.maxHealth;  
-        float normalizedItems = playerStats.collectedItems / totalCollectibles; 
+        float normalizedItems = playerStats.collectedItems / gameConfig.GetTotalCollectibles(); 
 
         float score =
             (normalizedTime * 0.3f +
@@ -174,11 +173,11 @@ public class GameManager : MonoBehaviour
 
     public int GetTotalCollectible()
     {
-        return totalCollectibles;
+        return gameConfig.GetTotalCollectibles();
     }
     public float GetTimerDuration()
     {
-        return TotalTime;
+        return gameConfig.GetTotalTime();
     }
     public int GetCurrentHealth()
     {

@@ -9,15 +9,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ae230224fb8e03245baaec32534c2be5, type: 3}
-  m_Name: PlayerStats
+  m_Script: {fileID: 11500000, guid: dfabbe4dede8d2c4e8f1e5be57dc04dd, type: 3}
+  m_Name: EnemyStats
   m_EditorClassIdentifier: 
-  maxHealth: 3
-  currentHealth: 0
-  collectedItems: 7
-  moveSpeed: 5
-  jumpHeight: 2
-  mouseSensitivity: 100
-  dashSpeed: 15
-  dashDuration: 0.2
-  dashCooldown: 5
+  damage: 1
+  patrolRadius: 10
+  stoppingDistance: 0.5
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 256
+  detectionRange: 20
+  senseRange: 4
+  patrolSpeed: 2
+  chaseSpeed: 4

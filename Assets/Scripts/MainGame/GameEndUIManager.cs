@@ -7,6 +7,7 @@ using static GameEvents;
 
 public class GameEndUIManager : MonoBehaviour
 {
+    [SerializeField] private TextMeshProUGUI TitleText;
     [SerializeField] private TextMeshProUGUI timerText;
     [SerializeField] private TextMeshProUGUI healthText;
     [SerializeField] private TextMeshProUGUI collectedItemText;
@@ -42,6 +43,7 @@ public class GameEndUIManager : MonoBehaviour
 
     public void SetPopUpValue(int currentTime, int currentHealth, int maxHealth, int collectedItem, int totalItem, int overallScore)
     {
+        TitleText.text = (currentHealth == 0 || currentTime == 0) ? "Game Over" : "Congratulation";
         timerText.text = $"Time Remaining: {currentTime} Second";
         healthText.text = $"Health: {currentHealth}/{maxHealth}";
         collectedItemText.text = $"Collected: {collectedItem}/{totalItem}";

@@ -47,17 +47,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 482a7a52cdb474b41bb72e883c27f72e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 1
-  patrolRadius: 10
-  stoppingDistance: 0.5
-  obstacleMask:
-    serializedVersion: 2
-    m_Bits: 256
-  detectionRange: 8
-  senseRange: 4
-  patrolSpeed: 2
-  chaseSpeed: 3.5
   player: {fileID: 0}
+  enemyStats: {fileID: 11400000, guid: 5bb3503d93907c64f88131c6c476ca5d, type: 2}
 --- !u!135 &884016881085178817
 SphereCollider:
   m_ObjectHideFlags: 0

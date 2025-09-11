@@ -10,19 +10,10 @@ public class PlayerMovement : MonoBehaviour
     private CharacterController controller;
     private Animator animator;
 
-    [Header("Movement Settings")]
-    [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private float jumpHeight = 2f;
-    [SerializeField] private float gravity = -9.81f;
+    [Header("Player Stats Reference")]
+    [SerializeField] private PlayerStatsSO playerStats;
 
-    [Header("Mouse Settings")]
-    [SerializeField] private float mouseSensitivity = 100f;
-
-    [Header("Dash Settings")]
-    [SerializeField] private float dashSpeed = 15f;
-    [SerializeField] private float dashDuration = 0.2f;
-    [SerializeField] private float dashCooldown = 4f;
-
+    private float gravity = -9.81f;
     private Vector3 velocity;
     private bool isGrounded;
     private float xRotation = 0f;
@@ -90,8 +81,8 @@ public class PlayerMovement : MonoBehaviour
     }
     private void HandleMouseLook()
     {
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
+        float mouseX = Input.GetAxis("Mouse X") * playerStats.mouseSensitivity * Time.deltaTime;
+        float mouseY = Input.GetAxis("Mouse Y") * playerStats.mouseSensitivity * Time.deltaTime;
 
         player.transform.Rotate(Vector3.up * mouseX);
 
@@ -110,7 +101,7 @@ public class PlayerMovement : MonoBehaviour
         float z = Input.GetAxis("Vertical");
 
         Vector3 move = player.transform.right * x + player.transform.forward * z;
-        controller.Move(move * moveSpeed * Time.deltaTime);
+        controller.Move(move * playerStats.moveSpeed * Time.deltaTime);
 
         bool isMoving = move.magnitude > 0.1f;
         if (animator != null)
@@ -119,7 +110,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         if (Input.GetButtonDown("Jump") && isGrounded)
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            velocity.y = Mathf.Sqrt(playerStats.jumpHeight * -2f * gravity);
 
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
@@ -134,14 +125,14 @@ public class PlayerMovement : MonoBehaviour
             isDashing = true;
             dashAvailable = false;
 
-            dashTime = Time.time + dashDuration;
-            cooldownRemaining = dashCooldown;
+            dashTime = Time.time + playerStats.dashDuration;
+            cooldownRemaining = playerStats.dashCooldown;
 
             // Fire cooldown start event
-            GameEvents.DashCooldownChanged(cooldownRemaining, dashCooldown);
+            GameEvents.DashCooldownChanged(cooldownRemaining, playerStats.dashCooldown);
 
             Vector3 dashDirection = player.transform.forward;
-            velocity = dashDirection * dashSpeed;
+            velocity = dashDirection * playerStats.dashSpeed;
         }
     }
 
@@ -163,7 +154,7 @@ public class PlayerMovement : MonoBehaviour
             cooldownRemaining -= Time.deltaTime;
 
             // Fire update event
-            GameEvents.DashCooldownChanged(Mathf.Max(0, cooldownRemaining), dashCooldown);
+            GameEvents.DashCooldownChanged(Mathf.Max(0, cooldownRemaining), playerStats.dashCooldown);
 
             if (cooldownRemaining <= 0f)
             {
@@ -171,7 +162,7 @@ public class PlayerMovement : MonoBehaviour
                 cooldownRemaining = 0f;
 
                 // Fire final event (ready again)
-                GameEvents.DashCooldownChanged(0, dashCooldown);
+                GameEvents.DashCooldownChanged(0, playerStats.dashCooldown);
             }
         }
     }
