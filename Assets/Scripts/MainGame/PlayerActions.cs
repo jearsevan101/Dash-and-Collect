@@ -7,16 +7,20 @@ using static UnityEngine.Rendering.DebugUI;
 public class PlayerActions : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private GameObject player; // Player reference
+    [SerializeField] private GameObject player;
 
-    [SerializeField] private Transform collectiblesParent; // Parent containing all collectibles
+    [SerializeField] private CollectibleSpawner collectiblesParent; 
 
     [Header("Interaction Settings")]
-    public float interactRange = 3f;
+    [SerializeField] private float interactRange = 3f;
+
+    private int currentCollectedItems = 0;
 
 
     void Update()
     {
+        if (GameManager.Instance.IsGameStopped) return;
+
         if (Input.GetKeyDown(KeyCode.F))
         {
             TryCollectClosest();
@@ -30,8 +34,7 @@ public class PlayerActions : MonoBehaviour
         Transform closest = null;
         float closestDistance = Mathf.Infinity;
 
-        // Loop through children of collectiblesParent
-        foreach (Transform child in collectiblesParent)
+        foreach (Transform child in collectiblesParent.transform)
         {
             float dist = Vector3.Distance(player.transform.position, child.position);
             if (dist < closestDistance)
@@ -41,13 +44,12 @@ public class PlayerActions : MonoBehaviour
             }
         }
 
-        // If something is within range, collect it
         if (closest != null && closestDistance <= interactRange)
         {
             Debug.Log("Collected: " + closest.name);
             Destroy(closest.gameObject);
-
-            GameEvents.ItemCollected(1);
+            currentCollectedItems++;
+            GameEvents.ItemCollected(GameManager.Instance.GetTotalCollectible(), currentCollectedItems);
         }
         else
         {

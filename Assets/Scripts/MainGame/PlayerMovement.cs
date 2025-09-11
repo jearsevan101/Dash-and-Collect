@@ -8,7 +8,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private GameObject player;
     [SerializeField] private Transform cameraTransform;
     private CharacterController controller;
-
+    private Animator animator;
 
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 5f;
@@ -21,15 +21,27 @@ public class PlayerMovement : MonoBehaviour
     [Header("Dash Settings")]
     [SerializeField] private float dashSpeed = 15f;
     [SerializeField] private float dashDuration = 0.2f;
-    [SerializeField] private float dashCooldown = 1f;
+    [SerializeField] private float dashCooldown = 4f;
 
     private Vector3 velocity;
     private bool isGrounded;
     private float xRotation = 0f;
 
     private bool isDashing = false;
+    private bool dashAvailable = true;
+
     private float dashTime;
-    private float nextDashTime;
+    private float cooldownRemaining;
+
+    private void OnEnable()
+    {
+        GameEvents.OnGamePaused += HandlePause;
+    }
+
+    private void OnDisable()
+    {
+        GameEvents.OnGamePaused -= HandlePause;
+    }
 
     void Start()
     {
@@ -48,11 +60,19 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
+        animator = player.GetComponentInChildren<Animator>();
+        if (animator == null)
+        {
+            Debug.LogWarning("No Animator found in Player children!");
+        }
+
         Cursor.lockState = CursorLockMode.Locked;
     }
 
     void Update()
     {
+        if (GameManager.Instance.IsGameStopped) return;
+
         HandleMouseLook();
 
         if (isDashing)
@@ -61,8 +81,13 @@ public class PlayerMovement : MonoBehaviour
             HandleMovement();
 
         HandleDashInput();
+        HandleDashCooldown();
     }
 
+    private void HandlePause(bool isPaused)
+    {
+        Cursor.lockState = isPaused ? CursorLockMode.None : CursorLockMode.Locked;
+    }
     private void HandleMouseLook()
     {
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
@@ -87,6 +112,12 @@ public class PlayerMovement : MonoBehaviour
         Vector3 move = player.transform.right * x + player.transform.forward * z;
         controller.Move(move * moveSpeed * Time.deltaTime);
 
+        bool isMoving = move.magnitude > 0.1f;
+        if (animator != null)
+        {
+            animator.SetBool("IsRunning", isMoving);
+        }
+
         if (Input.GetButtonDown("Jump") && isGrounded)
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
 
@@ -96,11 +127,18 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleDashInput()
     {
-        if (Input.GetKeyDown(KeyCode.E) && Time.time >= nextDashTime && !isDashing)
+        if (Input.GetKeyDown(KeyCode.E) && dashAvailable && !isDashing)
         {
+            GameEvents.PlaySFX(SFXType.PlayerDash);
+
             isDashing = true;
+            dashAvailable = false;
+
             dashTime = Time.time + dashDuration;
-            nextDashTime = Time.time + dashCooldown;
+            cooldownRemaining = dashCooldown;
+
+            // Fire cooldown start event
+            GameEvents.DashCooldownChanged(cooldownRemaining, dashCooldown);
 
             Vector3 dashDirection = player.transform.forward;
             velocity = dashDirection * dashSpeed;
@@ -115,6 +153,26 @@ public class PlayerMovement : MonoBehaviour
         {
             isDashing = false;
             velocity = Vector3.zero;
+        }
+    }
+
+    private void HandleDashCooldown()
+    {
+        if (!dashAvailable)
+        {
+            cooldownRemaining -= Time.deltaTime;
+
+            // Fire update event
+            GameEvents.DashCooldownChanged(Mathf.Max(0, cooldownRemaining), dashCooldown);
+
+            if (cooldownRemaining <= 0f)
+            {
+                dashAvailable = true;
+                cooldownRemaining = 0f;
+
+                // Fire final event (ready again)
+                GameEvents.DashCooldownChanged(0, dashCooldown);
+            }
         }
     }
 }

@@ -1,26 +1,35 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Enemy : MonoBehaviour
 {
     [Header("Combat Settings")]
-    [SerializeField] private int damage = 5; 
+    [SerializeField] private int damage = 1;
 
     [Header("Patrol Settings")]
     [SerializeField] private float patrolRadius = 10f;
-    [SerializeField] private float moveSpeed = 2f;
     [SerializeField] private float stoppingDistance = 0.5f;
     [SerializeField] private LayerMask obstacleMask;
 
     [Header("Chase Settings")]
-    [SerializeField] private float detectionRange = 8f;   // how far enemy can see player
-    [SerializeField] private float chaseSpeed = 3.5f;     // faster movement when chasing
-    [SerializeField] private Transform player;            // assign player transform in inspector
-    [SerializeField] private float avoidDistance = 1f;    // how far to check for wall
+    [SerializeField] private float detectionRange = 8f;      // how far enemy can see player
+    [SerializeField] private float senseRange = 4f;          // "feel" range (no LoS needed)
+    [SerializeField] private float patrolSpeed = 2f;
+    [SerializeField] private float chaseSpeed = 3.5f;
+    [SerializeField] private Transform player;
 
     private Vector3 targetPos;
     private enum EnemyState { Patrol, Chase }
     private EnemyState currentState = EnemyState.Patrol;
+
+    private NavMeshAgent agent;
+
+    void Awake()
+    {
+        agent = GetComponent<NavMeshAgent>();
+        agent.stoppingDistance = stoppingDistance;
+    }
 
     void Start()
     {
@@ -29,6 +38,8 @@ public class Enemy : MonoBehaviour
 
     void Update()
     {
+        if (GameManager.Instance.IsGameStopped) return;
+
         if (player != null)
         {
             CheckForPlayer();
@@ -48,10 +59,11 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    // DETECTION
+    // ================= DETECTION =================
     void CheckForPlayer()
     {
         float dist = Vector3.Distance(transform.position, player.position);
+        bool hasLineOfSight = false;
 
         if (dist <= detectionRange)
         {
@@ -60,28 +72,37 @@ public class Enemy : MonoBehaviour
 
             if (!Physics.Linecast(eye, targetEye, obstacleMask))
             {
-                currentState = EnemyState.Chase;
-                return;
+                hasLineOfSight = true;
             }
         }
 
+        // Chase if has LoS OR within sense range
+        if (hasLineOfSight || dist <= senseRange)
+        {
+            if (currentState != EnemyState.Chase)
+            {
+                GameManager.Instance.EnemyStartedChase();
+                currentState = EnemyState.Chase;
+                agent.speed = chaseSpeed;
+            }
+            return;
+        }
+
+        // Otherwise return to patrol
         if (currentState == EnemyState.Chase)
         {
+            GameManager.Instance.EnemyStoppedChase();
             currentState = EnemyState.Patrol;
             PickNewDestination();
         }
     }
 
-    // PATROL
+    // ================= PATROL =================
     void Patrol()
     {
-        if (Vector3.Distance(transform.position, targetPos) <= stoppingDistance)
+        if (!agent.pathPending && agent.remainingDistance <= stoppingDistance)
         {
             PickNewDestination();
-        }
-        else
-        {
-            MoveTowards(targetPos, moveSpeed);
         }
     }
 
@@ -96,45 +117,22 @@ public class Enemy : MonoBehaviour
                 transform.position.z + randomCircle.y
             );
 
-            if (!Physics.Linecast(transform.position, candidate, obstacleMask))
+            NavMeshHit hit;
+            if (NavMesh.SamplePosition(candidate, out hit, 2f, NavMesh.AllAreas))
             {
-                targetPos = candidate;
+                agent.speed = patrolSpeed;
+                agent.SetDestination(hit.position);
+                targetPos = hit.position;
                 return;
             }
         }
 
-        targetPos = transform.position;
+        agent.SetDestination(transform.position); // fallback
     }
 
-    // CHASE
+    // ================= CHASE =================
     void Chase()
     {
-        Vector3 eye = transform.position + Vector3.up * 1.5f;
-        Vector3 targetEye = player.position + Vector3.up * 1.5f;
-
-        if (Physics.Linecast(eye, targetEye, obstacleMask))
-        {
-            currentState = EnemyState.Patrol;
-            PickNewDestination();
-            return;
-        }
-
-        Vector3 dir = (player.position - transform.position).normalized;
-
-        if (Physics.Raycast(transform.position, dir, out RaycastHit hit, avoidDistance, obstacleMask))
-        {
-            Vector3 avoidDir = Vector3.Cross(Vector3.up, hit.normal).normalized;
-            dir = Vector3.Lerp(dir, avoidDir, 0.7f);
-        }
-
-        MoveTowards(transform.position + dir, chaseSpeed);
-    }
-
-    // MOVEMENT
-    void MoveTowards(Vector3 destination, float speed)
-    {
-        Vector3 dir = (destination - transform.position).normalized;
-        transform.position += dir * speed * Time.deltaTime;
-        transform.forward = Vector3.Lerp(transform.forward, dir, Time.deltaTime * 5f);
+        agent.SetDestination(player.position);
     }
 }

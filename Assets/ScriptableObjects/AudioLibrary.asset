@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a36f8270779084ba52c6c21fb67a75, type: 3}
+  m_Name: AudioLibrary
+  m_EditorClassIdentifier: 
+  musicClips:
+  - trackName: 0
+    clip: {fileID: 8300000, guid: 2a82d0f6827af0247bb6dcb12d85759a, type: 3}
+    volume: 1
+    loop: 1
+  - trackName: 1
+    clip: {fileID: 8300000, guid: e1331e1dd3065c14e9a4b997f9ef2c09, type: 3}
+    volume: 1
+    loop: 1
+  - trackName: 3
+    clip: {fileID: 8300000, guid: 6c8df6a7209cd2a468c2d1f53030e3af, type: 3}
+    volume: 1
+    loop: 0
+  - trackName: 2
+    clip: {fileID: 8300000, guid: 54b3f75317e94ba49881902a0009e758, type: 3}
+    volume: 1
+    loop: 0
+  sfxClips:
+  - sfxName: 1
+    clip: {fileID: 8300000, guid: 2478f5a055c01a345a256077a4d6e2f6, type: 3}
+    volume: 1
+  - sfxName: 2
+    clip: {fileID: 8300000, guid: dfc5e85583993f04483dd162ac117d31, type: 3}
+    volume: 1
+  - sfxName: 0
+    clip: {fileID: 8300000, guid: ac7590bb6cfd7414bae26d112007a196, type: 3}
+    volume: 1
+  - sfxName: 3
+    clip: {fileID: 8300000, guid: 37a939be09272a2438db18e1f2ed0558, type: 3}
+    volume: 1

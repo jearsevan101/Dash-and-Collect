@@ -2,56 +2,57 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
+using static UnityEditor.Timeline.Actions.MenuPriority;
 
 public class GameUIManager : MonoBehaviour
 {
-    public static GameUIManager Instance; 
     [SerializeField] private TextMeshProUGUI timerText;
+    [SerializeField] private TextMeshProUGUI healthText;
+    [SerializeField] private TextMeshProUGUI collectedItemText;
+    [SerializeField] private Image dashBarCooldown;
 
-    [Header("Timer Settings")]
-    [SerializeField] private float startTime = 300f; 
-    private float timeRemaining;
-    private bool timerRunning = true;
-
-    public event Action<float> OnTimeChanged;
-    public event Action OnTimerEnded;
-
-    void Awake()
+    private void OnEnable()
     {
-        // Singleton pattern
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        GameEvents.OnItemCollected += HandleItemCollected;
+        GameEvents.OnPlayerDamaged += HandleHealthUI;
+        GameEvents.OnTimeChanged += HandleTimerUI;
+        GameEvents.OnDashCooldownChanged += UpdateDashCooldownBar;
     }
 
+    private void OnDisable()
+    {
+        GameEvents.OnItemCollected -= HandleItemCollected;
+        GameEvents.OnPlayerDamaged -= HandleHealthUI;
+        GameEvents.OnTimeChanged -= HandleTimerUI;
+        GameEvents.OnDashCooldownChanged -= UpdateDashCooldownBar;
+    }
     void Start()
     {
-        timeRemaining = startTime;
+        collectedItemText.text = $"Collected: 0 / {GameManager.Instance.GetTotalCollectible()}";
     }
 
-    void Update()
+    private void HandleTimerUI(float remainingTime)
     {
-        HandleTimer();
+        timerText.text = Mathf.RoundToInt(remainingTime).ToString();
+    }
+    private void HandleHealthUI(int damage)
+    {
+        healthText.text = $"Health: {GameManager.Instance.GetCurrentHealth() - damage}/{GameManager.Instance.GetTotalHealth()}";
+    }
+    private void HandleItemCollected(GameEvents.CollectibleEventArgs e)
+    {
+        collectedItemText.text = $"Collected: {e.currentCollected} / {e.totalCollectibles}";
     }
 
-    private void HandleTimer()
+    public void VisibilityUI(bool isVisible)
     {
-        if (!timerRunning) return;
+        this.gameObject.SetActive(isVisible);
+    }
 
-        if (timeRemaining > 0)
-        {
-            timeRemaining -= Time.deltaTime;
-            timerText.text = Mathf.RoundToInt(timeRemaining).ToString();
-            if (timeRemaining < 0) timeRemaining = 0;
-
-            // Notify subscribers
-            OnTimeChanged?.Invoke(timeRemaining);
-
-            if (timeRemaining <= 0)
-            {
-                timerRunning = false;
-                OnTimerEnded?.Invoke();
-            }
-        }
+    public void UpdateDashCooldownBar(float remainingTime, float max)
+    {
+        dashBarCooldown.fillAmount = 1 - (remainingTime / max);
     }
 }

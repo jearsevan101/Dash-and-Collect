@@ -5,7 +5,7 @@ using UnityEngine;
 public class CollectibleSpawner : MonoBehaviour
 {
     [Header("Spawner Settings")]
-    [SerializeField] private int totalCollectibles = 10;          // Total number to spawn
+    private int totalCollectibles;          // Total number to spawn
     [SerializeField] private GameObject[] collectiblePrefabs;     // Array of collectible prefabs
     [SerializeField] private Vector2 spawnAreaSize = new Vector2(10, 10); // Area (XZ) where items spawn
     [SerializeField] private float spawnHeight = 0f;              // Height above plane
@@ -16,10 +16,11 @@ public class CollectibleSpawner : MonoBehaviour
     [SerializeField] private float searchStep = 0.5f;             // Step size when searching outward
 
     [Header("References")]
-    [SerializeField] private Transform plane;                     
+    [SerializeField] private Transform plane;
 
     void Start()
     {
+        totalCollectibles = GameManager.Instance.GetTotalCollectible();
         SpawnCollectibles();
     }
 
@@ -95,5 +96,10 @@ public class CollectibleSpawner : MonoBehaviour
 
         // If no free spot found, return original (likely blocked)
         return startPos;
+    }
+
+    public int TotalCollectible()
+    {
+        return totalCollectibles;
     }
 }
