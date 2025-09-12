@@ -1,0 +1,15 @@
+name: "nakama1"
+logger:
+  level: "DEBUG"
+
+runtime:
+  path: "/nakama/data/modules"
+  js_entrypoint: "submit_run.js"
+
+leaderboards:
+  - id: "completion_leaderboard"
+    authoritative: false
+    sort: "asc"
+    operator: "best"
+    reset_schedule: ""
+    metadata: {}
