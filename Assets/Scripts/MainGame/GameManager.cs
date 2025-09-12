@@ -153,7 +153,10 @@ public class GameManager : MonoBehaviour
 
         );
         StopGame();
-        SubmitScoreToServer();
+        if (playerStats.collectedItems == gameConfig.GetTotalCollectibles())
+        {
+            SubmitScoreToServer();
+        }
         Debug.Log("GAME ENDED!");
         Debug.Log($"GAME ENDED: COLLECTED ITEMS : {playerStats.collectedItems}, TIME REMAINING : {timeRemaining}, CURRENT HEALTH : {playerStats.currentHealth},");
     }

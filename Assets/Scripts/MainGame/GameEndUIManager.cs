@@ -38,13 +38,13 @@ public class GameEndUIManager : MonoBehaviour
 
     private void HandleGameEnded(GameStatusEventArgs e)
     {
-        SetPopUpValue((int)e.timeRemaining, e.health, GameManager.Instance.GetTotalHealth(), e.collectedItems, GameManager.Instance.GetTotalCollectible(), e.overallScore);
+        SetPopUpValue((int)e.timeRemaining, (int)GameManager.Instance.GetTimerDuration(), e.health, GameManager.Instance.GetTotalHealth(), e.collectedItems, GameManager.Instance.GetTotalCollectible(), e.overallScore);
     }
 
-    public void SetPopUpValue(int currentTime, int currentHealth, int maxHealth, int collectedItem, int totalItem, int overallScore)
+    public void SetPopUpValue(int currentTime, int maxTime, int currentHealth, int maxHealth, int collectedItem, int totalItem, int overallScore)
     {
         TitleText.text = (currentHealth == 0 || currentTime == 0) ? "Game Over" : "Congratulation";
-        timerText.text = $"Time Remaining: {currentTime} Second";
+        timerText.text = $"Completion Time: {maxTime - currentTime} Second";
         healthText.text = $"Health: {currentHealth}/{maxHealth}";
         collectedItemText.text = $"Collected: {collectedItem}/{totalItem}";
         overallScoreText.text = $"Overall Score \n {overallScore}";
