@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using static UnityEditor.Timeline.Actions.MenuPriority;
 
 public class GameUIManager : MonoBehaviour
 {

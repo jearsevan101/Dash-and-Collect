@@ -153,8 +153,30 @@ public class GameManager : MonoBehaviour
 
         );
         StopGame();
+        SubmitScoreToServer();
         Debug.Log("GAME ENDED!");
         Debug.Log($"GAME ENDED: COLLECTED ITEMS : {playerStats.collectedItems}, TIME REMAINING : {timeRemaining}, CURRENT HEALTH : {playerStats.currentHealth},");
+    }
+
+
+    private void SubmitScoreToServer()
+    {
+        if (!NakamaManager.Instance.IsConnected)
+        {
+            Debug.LogWarning("Cannot submit score, not connected to Nakama.");
+            return;
+        }
+
+        // Calculate completion time: max time - remaining time
+        float maxTime = gameConfig.GetTotalTime();
+        long completionTimeMs = (long)((maxTime - timeRemaining) * 1000);
+
+        int hitsTaken = playerStats.maxHealth - playerStats.currentHealth;
+
+        Debug.Log($"Submitting score: CompletionTime = {completionTimeMs}ms, HitsTaken = {hitsTaken}");
+
+        // Call NakamaManager to submit the run
+        _ = NakamaManager.Instance.SubmitRun(completionTimeMs, hitsTaken);
     }
 
     private void VisibilityCanvas(bool isGameEnded)
