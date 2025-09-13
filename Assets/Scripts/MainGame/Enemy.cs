@@ -40,7 +40,6 @@ public class Enemy : MonoBehaviour
         else if (currentState == EnemyState.Chase)
             Chase();
     }
-
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
@@ -49,7 +48,9 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    // ================= DETECTION =================
+
+    // DETECTION
+    #region Detection Player
     void CheckForPlayer()
     {
         float dist = Vector3.Distance(transform.position, player.position);
@@ -86,8 +87,9 @@ public class Enemy : MonoBehaviour
             PickNewDestination();
         }
     }
-
-    // ================= PATROL =================
+    #endregion
+    // PATROL
+    #region Patroling Area
     void Patrol()
     {
         if (!agent.pathPending && agent.remainingDistance <= enemyStats.stoppingDistance)
@@ -119,10 +121,13 @@ public class Enemy : MonoBehaviour
 
         agent.SetDestination(transform.position); // fallback
     }
-
-    // ================= CHASE =================
+    #endregion
+    // CHASE
+    #region Chasing Player
     void Chase()
     {
         agent.SetDestination(player.position);
     }
+ 
+    #endregion
 }

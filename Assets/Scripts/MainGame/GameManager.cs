@@ -9,21 +9,36 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameUIManager gameUICanvas;
     [SerializeField] private GameEndUIManager gameEndUICanvas;
 
+    public static GameManager Instance { get; private set; }
 
     private int chasingCount = 0;
-
     private bool gameEnded = false;
-
-    public static GameManager Instance { get; private set; }
     public bool IsGameStopped { get; private set; }
-
     private float timeRemaining;
     private bool timerRunning = true;
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     private void Start()
     {
         playerStats.ResetStats();
         timeRemaining = gameConfig.GetTotalTime();
+    }
+    private void OnEnable()
+    {
+        GameEvents.OnPlayerDamaged += HandleDamage;
+        GameEvents.OnItemCollected += HandleItemCollected;
+        GameEvents.OnTimeChanged += HandleTimeChanged;
+    }
+
+    private void OnDisable()
+    {
+        GameEvents.OnPlayerDamaged -= HandleDamage;
+        GameEvents.OnItemCollected -= HandleItemCollected;
+        GameEvents.OnTimeChanged -= HandleTimeChanged;
     }
 
     private void Update()
@@ -45,10 +60,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void Awake()
-    {
-        Instance = this;
-    }
+    #region Enemy Chasing Count
 
     public void EnemyStartedChase()
     {
@@ -67,32 +79,10 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void StopGame()
-    {
-        GameEvents.PauseGame(true);
-        IsGameStopped = true;
-    }
+    #endregion
 
-    public void ResumeGame()
-    {
-        GameEvents.PauseGame(false);
-        IsGameStopped = false;
-    }
 
-    private void OnEnable()
-    {
-        GameEvents.OnPlayerDamaged += HandleDamage;
-        GameEvents.OnItemCollected += HandleItemCollected;
-        GameEvents.OnTimeChanged += HandleTimeChanged;
-    }
-
-    private void OnDisable()
-    {
-        GameEvents.OnPlayerDamaged -= HandleDamage;
-        GameEvents.OnItemCollected -= HandleItemCollected;
-        GameEvents.OnTimeChanged -= HandleTimeChanged;
-    }
-
+    #region Event Handlers
     private void HandleDamage(int dmg)
     {
         GameEvents.CameraShaking(0.5f, 0.2f);
@@ -113,7 +103,21 @@ public class GameManager : MonoBehaviour
         timeRemaining = remaining;
         if (timeRemaining <= 0) CheckGameEnd();
     }
+    #endregion
 
+
+    #region Game Flow
+    public void StopGame()
+    {
+        GameEvents.PauseGame(true);
+        IsGameStopped = true;
+    }
+
+    public void ResumeGame()
+    {
+        GameEvents.PauseGame(false);
+        IsGameStopped = false;
+    }
     private void CheckGameEnd()
     {
         if (gameEnded) return;
@@ -170,7 +174,6 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // Calculate completion time: max time - remaining time
         float maxTime = gameConfig.GetTotalTime();
         long completionTimeMs = (long)((maxTime - timeRemaining) * 1000);
 
@@ -178,9 +181,10 @@ public class GameManager : MonoBehaviour
 
         Debug.Log($"Submitting score: CompletionTime = {completionTimeMs}ms, HitsTaken = {hitsTaken}");
 
-        // Call NakamaManager to submit the run
         _ = NakamaManager.Instance.SubmitRun(completionTimeMs, hitsTaken);
     }
+
+    #endregion
 
     private void VisibilityCanvas(bool isGameEnded)
     {

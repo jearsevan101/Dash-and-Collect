@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Nakama;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
 
 public enum NakamaConnectionStatus
 {
@@ -42,6 +41,7 @@ public class NakamaManager : MonoBehaviour
     public bool IsLoggedIn => session != null && !session.IsExpired;
 
     public string CurrentUsername => session != null ? session.Username : string.Empty;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -58,7 +58,7 @@ public class NakamaManager : MonoBehaviour
         await ConnectWithDevice();
     }
 
-
+    #region Handle Event
     private void ChangeStatus(NakamaConnectionStatus status)
     {
         Debug.Log($"[Nakama] Status: {status}");
@@ -73,10 +73,9 @@ public class NakamaManager : MonoBehaviour
     {
         OnErrorMessage?.Invoke(errorMessage);
     }
+    #endregion
 
-    // -------------------
     //  CONNECTION
-    // -------------------
     #region Device Authentication
 
     public async Task ConnectWithDevice()
@@ -223,6 +222,7 @@ public class NakamaManager : MonoBehaviour
 
     #endregion
 
+    #region Logout
     public void Logout()
     {
         // Clear session
@@ -241,11 +241,10 @@ public class NakamaManager : MonoBehaviour
 
         Debug.Log("Logged out successfully!");
     }
+    #endregion
 
-
-    // -------------------
     //  RPC SUBMIT RUN
-    // -------------------
+    #region Submit Record to Server
     public async Task<bool> SubmitRun(long completionTimeMs, int hitsTaken)
     {
         if (!IsConnected)
@@ -276,18 +275,10 @@ public class NakamaManager : MonoBehaviour
             return false;
         }
     }
+    #endregion
 
-    [Serializable]
-    private class SubmitRunResult
-    {
-        public bool success;
-        public string error;
-    }
-
-    // -------------------
     //  LEADERBOARDS
-    // -------------------
-
+    #region Get Top Leaderboard Record
     public async Task<IApiLeaderboardRecordList> GetTopLeaderboard(int limit = 10)
     {
         try
@@ -309,29 +300,8 @@ public class NakamaManager : MonoBehaviour
             return null;
         }
     }
+    #endregion
 
-    public async Task<IApiLeaderboardRecordList> GetAroundMeLeaderboard(int limit = 7)
-    {
-        try
-        {
-            var records = await client.ListLeaderboardRecordsAroundOwnerAsync(session, leaderboardId, session.UserId, limit);
-            int count = records.Records.Count(); // FIX: use LINQ Count()
-
-            Debug.Log($"Records around me: {count}");
-
-            foreach (var record in records.Records)
-            {
-                Debug.Log($"{record.Rank}. {record.Username} - Time: {record.Score}ms");
-            }
-
-            return records;
-        }
-        catch (Exception e)
-        {
-            Debug.LogError("GetAroundMeLeaderboard failed: " + e.Message);
-            return null;
-        }
-    }
     [Serializable]
     private class SerializableDict
     {

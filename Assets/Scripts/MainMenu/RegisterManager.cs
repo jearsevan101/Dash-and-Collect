@@ -22,7 +22,7 @@ public class RegisterManager : MonoBehaviour
         if (NakamaManager.Instance != null && NakamaManager.Instance.IsLoggedIn)
         {
             SetVisibility(false);
-            mainPanel.SetActive(true); // show main panel instead
+            mainPanel.SetActive(true); 
             return;
         }
 

@@ -14,6 +14,7 @@ public class MainMenuCanvasManager : MonoBehaviour
     [SerializeField] private Button SubmitScoreButton;
     [SerializeField] private Button editUsernameButton;
     [SerializeField] private Button logoutButton;
+    [SerializeField] private Button exitButton;
     [SerializeField] private TextMeshProUGUI statusText;
     [SerializeField] private TextMeshProUGUI usernameText;
     [SerializeField] private LeaderboardUIManager leaderboardManager;
@@ -78,6 +79,10 @@ public class MainMenuCanvasManager : MonoBehaviour
 
                 Loader.Load(Loader.Scene.MainMenu); 
             }
+        });
+        exitButton.onClick.AddListener(() =>
+        {
+            Application.Quit();
         });
     }
 
